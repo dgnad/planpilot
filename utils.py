@@ -3,7 +3,6 @@ import errno
 import logging
 import os
 import shutil
-
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -131,25 +130,3 @@ def write_lines_to_file(file_path, lines):
         # print(f"Successfully wrote {len(lines)} lines to {file_path}.")
     except Exception as e:
         print(f"An error occurred: {e}")
-
-
-def is_binary_available(binary_name):
-    # Check if the binary exists in the current directory
-    # TODO: change dir_binary to current_dir_binary?
-    dir_binary = Path("bin/" + binary_name)
-    if current_dir_binary.is_file():
-        return True
-    # Check if the binary is in the PATH
-    if shutil.which(binary_name):
-        return True
-    return False
-
-
-def check_necessary_files():
-    if not is_binary_available("plasp"):
-        logger.error("ERROR: plasp is not available!")
-        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), "plasp")
-
-    if not is_binary_available("fasb"):
-        logger.error("ERROR: fasb is not available!")
-        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), "fasb")

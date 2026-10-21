@@ -1,0 +1,19 @@
+version = 1
+revision = 3
+requires-python = "==3.12.*"
+
+[[package]]
+name = "fasb"
+version = "0.2.9"
+source = { editable = "fasb-subtree" }
+
+[[package]]
+name = "planpilot"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "fasb" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "fasb", editable = "fasb-subtree" }]

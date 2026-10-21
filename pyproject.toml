@@ -1,0 +1,15 @@
+[project]
+name = "planpilot"
+version = "0.1.0"
+description = "Interactive solution-space exploration for classical planning using ASP"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fasb",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+fasb = { path = "fasb-subtree", editable = true }
