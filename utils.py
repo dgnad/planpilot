@@ -94,8 +94,7 @@ def parse_arguments():
     parser.add_argument(
         "--script",
         type=str,
-        help="The path to the fasb script; for non-interactive mode (requires fasb built in"
-        "interpreter configuration.",
+        help="The path to the fasb script; for non-interactive mode.",
     )
     parser.add_argument(
         "--dump-output",

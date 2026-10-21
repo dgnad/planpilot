@@ -7,9 +7,33 @@ better.
 
 Right now, PlanPilot supports classical planning problems described in PDDL or SAS+.
 
+## Requirements
+
+- Python 3.12 or newer
+- [uv](https://docs.astral.sh/uv/) (Python package manager used for the build)
+- Rust toolchain (rustc/cargo 1.85 or later), CMake, and a C/C++ compiler.
+  These are needed to build the `fasb` Python bindings from `fasb-subtree/`,
+  which compile the embedded [clingo](https://github.com/potassco/clingo)
+  solver and the [savan](https://crates.io/crates/savan) reasoning library.
+- The `plasp` binary (shipped in [bin/plasp](bin/plasp)).
+
+All Python dependencies are declared in [pyproject.toml](pyproject.toml) and
+pinned in [uv.lock](uv.lock).
+
 ## Build
 
-The easiest way is to build an Apptainer container as follows:
+Create a virtual environment and build the `fasb` Python bindings with
+
+```bash
+uv sync
+```
+
+This compiles the Rust crate in `fasb-subtree/` (via
+[maturin](https://www.maturin.rs)) and installs it as the importable `fasb`
+module into `.venv/`.
+
+Alternatively, build an Apptainer container (which performs all of the above
+inside the image) as follows:
 
 ```bash
 apptainer build planpilot.sif Apptainer.planpilot
@@ -20,11 +44,18 @@ apptainer build planpilot.sif Apptainer.planpilot
 Basic usage:
 
 ```bash
-./planpilot.sif -i /path/to/instance.pddl --horizon HORIZON
+uv run python planpilot.py -i /path/to/instance.pddl --horizon HORIZON
 
 ```
 
 where `HORIZON` is a positive number.
+
+When using the container:
+
+```bash
+./planpilot.sif -i /path/to/instance.pddl --horizon HORIZON
+
+```
 
 ### Beluga Usage
 
@@ -61,17 +92,22 @@ To start interactive mode, use the following command: Then, navigation in the pl
                         Type of ASP encoding.
 -  --abstract-time-steps
                         If true, it only reports that actions occur some time during the plans, but without specifying when.
--  --script SCRIPT       The path to the fasb script; for non-interactive mode - requires fasb built in interpreter configuration.
+-  --script SCRIPT       The path to the fasb script; for non-interactive mode.
 -  --dump-output         dump the output of tools.
 -  --cleanup             Clean all LP files in the folder after execution.
 
 
 The program first encodes the planning problem as an answer set program using
-`plasp` (Gebser et al. 2011; Dimopoulos et al. 2019; [link to
-repo](https://github.com/potassco/plasp). It then executes `fasb` (Fichte et
-al. AAAI 2022; [link to repo](https://github.com/drwadu/fasb)) using its
-interactive mode. The original `README.md` and `LICENSE` of `fasb` can be found
-in the directory `bin/fasb-x86_64-unknown-linux-gnu`.
+`plasp` (Gebser et al. 2011; Dimoulos et al. 2019; [link to
+repo](https://github.com/potassco/plasp). Reasoning over the resulting answer
+sets is then performed by `fasb` (Fichte et al. AAAI 2022; [link to
+repo](https://github.com/drwadu/fasb)). Instead of calling a prebuilt `fasb`
+binary, the reasoning is now integrated through the Python bindings of `fasb`
+(`start_fasb` for interactive mode, `start_fasb_interpreter` for running
+scripts), which are built from the Rust sources in
+[fasb-subtree/](fasb-subtree/) and rely on the [savan](https://github.com/drwadu/savan)
+library for answer-set navigation. The original `README.md` and `LICENSE` of
+`fasb` can be found in the directory `fasb-subtree/`.
 
 ## `fasb` Commands
 
@@ -98,8 +134,10 @@ See [here](https://github.com/drwadu/fasb/blob/main/src/config.rs) for more comm
 
 We utilize for grounding the [Fast Downward](https://www.fast-downward.org/latest/) translator ([files](translate)).
 
-This project redistributes binaries for the following tools to provide core functionality. These tools are included under their original licenses:
+This project includes the following third-party tools under their original licenses:
 
-- plasp: A PDDL-to-ASP translator. Distributed under the MIT License. The license text can be found in [bin/LICENSE-plasp.md](bin/LICENSE-plasp.md).
+- plasp: A PDDL-to-ASP translator. The binary is redistributed under the MIT License; the license text can be found in [bin/LICENSE-plasp.md](bin/LICENSE-plasp.md).
 
-- fasb: A Facet-based Answer Set Browser. Distributed under the MIT License. The license text and original documentation can be found in the [bin/fasb-x86_64-unknown-linux-gnu/](bin/fasb-x86_64-unknown-linux-gnu/) directory.
+- fasb: A Facet-based Answer Set Browser. The complete Rust sources are maintained as a git subtree in [fasb-subtree/](fasb-subtree/) and built into Python bindings at compile time. Distributed under the MIT License; the license text and original documentation can be found in the [fasb-subtree/](fasb-subtree/) directory.
+
+- savan: The answer-set navigation and reasoning library used by `fasb`. It is pulled in as a Rust dependency (crate version pinned in [fasb-subtree/Cargo.lock](fasb-subtree/Cargo.lock)) at build time.
